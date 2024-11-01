@@ -19,7 +19,8 @@ document.getElementById('add-medication').addEventListener('click', function () 
         Name: medicationName,
         Class: medicationClass,
         Status: medicationStatus,
-        DecisionBasis: decisionBasis
+        DecisionBasis: decisionBasis,
+        isEditing: false // Flag to indicate if the record is in edit mode
     };
 
     // Add medication to the array
@@ -63,22 +64,55 @@ function updateMedicationsList() {
     medications.forEach((medication, index) => {
         const row = document.createElement('tr');
 
-        row.innerHTML = `
-            <td>${medication.Name}</td>
-            <td>${medication.Class}</td>
-            <td>${medication.Status}</td>
-            <td>${medication.DecisionBasis}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn btn-sm btn-link edit-medication" data-index="${index}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-link delete-medication" data-index="${index}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
+        if (medication.isEditing) {
+            // Editable row
+            row.innerHTML = `
+                <td><input type="text" class="form-control" value="${medication.Name}" id="edit-name-${index}"></td>
+                <td><input type="text" class="form-control" value="${medication.Class}" id="edit-class-${index}"></td>
+                <td>
+                    <select class="form-control" id="edit-status-${index}">
+                        <option value="Approved" ${medication.Status === 'Approved' ? 'selected' : ''}>Approved</option>
+                        <option value="Denied" ${medication.Status === 'Denied' ? 'selected' : ''}>Denied</option>
+                        <option value="Pending" ${medication.Status === 'Pending' ? 'selected' : ''}>Pending</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-control" id="edit-decision-${index}">
+                        <option value="PatientSpecific" ${medication.DecisionBasis === 'PatientSpecific' ? 'selected' : ''}>Patient Specific</option>
+                        <option value="InsurancePolicy" ${medication.DecisionBasis === 'InsurancePolicy' ? 'selected' : ''}>Insurance Policy</option>
+                        <option value="Other" ${medication.DecisionBasis === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-link save-medication" data-index="${index}">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="btn btn-sm btn-link cancel-edit" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+        } else {
+            // Read-only row
+            row.innerHTML = `
+                <td>${medication.Name}</td>
+                <td>${medication.Class}</td>
+                <td>${medication.Status}</td>
+                <td>${medication.DecisionBasis}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-link edit-medication" data-index="${index}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-link delete-medication" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+        }
 
         tbody.appendChild(row);
     });
@@ -86,33 +120,59 @@ function updateMedicationsList() {
     table.appendChild(tbody);
     medicationsList.appendChild(table);
 
-    // Add event listeners for edit and delete buttons
-    const editButtons = document.querySelectorAll('.edit-medication');
-    editButtons.forEach(button => {
-        button.addEventListener('click', editMedication);
+    // Add event listeners for action buttons
+    document.querySelectorAll('.edit-medication').forEach(button => {
+        button.addEventListener('click', enterEditMode);
     });
-
-    const deleteButtons = document.querySelectorAll('.delete-medication');
-    deleteButtons.forEach(button => {
+    document.querySelectorAll('.delete-medication').forEach(button => {
         button.addEventListener('click', deleteMedication);
+    });
+    document.querySelectorAll('.save-medication').forEach(button => {
+        button.addEventListener('click', saveMedication);
+    });
+    document.querySelectorAll('.cancel-edit').forEach(button => {
+        button.addEventListener('click', cancelEdit);
     });
 }
 
-// Function to edit a medication
-function editMedication(event) {
+// Function to enter edit mode
+function enterEditMode(event) {
     const index = event.currentTarget.getAttribute('data-index');
-    const medication = medications[index];
+    medications[index].isEditing = true;
+    updateMedicationsList();
+}
 
-    // Populate the form with medication details
-    document.getElementById('medication-name').value = medication.Name;
-    document.getElementById('medication-class').value = medication.Class;
-    document.getElementById('medication-status').value = medication.Status;
-    document.getElementById('decision-basis').value = medication.DecisionBasis;
+// Function to save edited medication
+function saveMedication(event) {
+    const index = event.currentTarget.getAttribute('data-index');
 
-    // Remove the medication from the array
-    medications.splice(index, 1);
+    // Get updated values
+    const updatedName = document.getElementById(`edit-name-${index}`).value.trim();
+    const updatedClass = document.getElementById(`edit-class-${index}`).value.trim();
+    const updatedStatus = document.getElementById(`edit-status-${index}`).value;
+    const updatedDecision = document.getElementById(`edit-decision-${index}`).value;
 
-    // Update the medications list display
+    if (updatedName === '') {
+        alert('Medication name cannot be empty.');
+        return;
+    }
+
+    // Update the medication object
+    medications[index] = {
+        Name: updatedName,
+        Class: updatedClass,
+        Status: updatedStatus,
+        DecisionBasis: updatedDecision,
+        isEditing: false
+    };
+
+    updateMedicationsList();
+}
+
+// Function to cancel edit
+function cancelEdit(event) {
+    const index = event.currentTarget.getAttribute('data-index');
+    medications[index].isEditing = false;
     updateMedicationsList();
 }
 
@@ -133,6 +193,13 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
         return;
     }
 
+    // Ensure no records are in edit mode
+    const isAnyEditing = medications.some(med => med.isEditing);
+    if (isAnyEditing) {
+        alert('Please save or cancel all edits before submitting.');
+        return;
+    }
+
     // Collect form data
     const finalData = {
         PA_ID: 'PA_' + new Date().getTime(), // Generate a unique PA_ID
@@ -141,7 +208,7 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
             LastName: document.getElementById('patient-last-name').value.trim(),
             DOB: document.getElementById('patient-dob').value
         },
-        Medications: medications,
+        Medications: medications.map(({ isEditing, ...med }) => med), // Exclude isEditing flag
         InsuranceDetails: {
             BIN: document.getElementById('bin').value.trim(),
             PCN: document.getElementById('pcn').value.trim(),
