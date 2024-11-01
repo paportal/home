@@ -40,25 +40,51 @@ function updateMedicationsList() {
     const medicationsList = document.getElementById('medications-list');
     medicationsList.innerHTML = '';
 
-    medications.forEach((medication, index) => {
-        const medicationDiv = document.createElement('div');
-        medicationDiv.classList.add('medication-item');
+    // Create a table to display medications
+    const table = document.createElement('table');
+    table.classList.add('table', 'table-bordered', 'table-striped');
 
-        medicationDiv.innerHTML = `
-            <button type="button" class="edit-medication" data-index="${index}">
-                <i class="fas fa-edit"></i> Edit
-            </button>
-            <button type="button" class="delete-medication" data-index="${index}">
-                <i class="fas fa-trash"></i> Delete
-            </button>
-            <p><strong>Name:</strong> ${medication.Name}</p>
-            <p><strong>Class:</strong> ${medication.Class}</p>
-            <p><strong>Status:</strong> ${medication.Status}</p>
-            <p><strong>Decision Basis:</strong> ${medication.DecisionBasis}</p>
+    // Table header
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th>Medication Name</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th>Decision Basis</th>
+            <th>Actions</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+
+    // Table body
+    const tbody = document.createElement('tbody');
+
+    medications.forEach((medication, index) => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${medication.Name}</td>
+            <td>${medication.Class}</td>
+            <td>${medication.Status}</td>
+            <td>${medication.DecisionBasis}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn btn-sm btn-link edit-medication" data-index="${index}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-link delete-medication" data-index="${index}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
         `;
 
-        medicationsList.appendChild(medicationDiv);
+        tbody.appendChild(row);
     });
+
+    table.appendChild(tbody);
+    medicationsList.appendChild(table);
 
     // Add event listeners for edit and delete buttons
     const editButtons = document.querySelectorAll('.edit-medication');
@@ -150,5 +176,3 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
             alert('Error submitting data.');
         });
 });
-
-// Include Font Awesome for icons (in the HTML head section)

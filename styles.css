@@ -20,34 +20,25 @@ body {
 .medication-item {
     position: relative;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    background-color: #fff;
+    border-bottom: 1px solid #ccc;
 }
 
-.medication-item .edit-medication {
-    position: absolute;
-    top: 10px;
-    right: 50px;
-    color: #007bff;
+.medication-item:last-child {
+    border-bottom: none;
+}
+
+.medication-item .action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.medication-item .action-buttons button {
     background: none;
     border: none;
     font-size: 1rem;
 }
 
-.medication-item .delete-medication {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: #dc3545;
-    background: none;
-    border: none;
-    font-size: 1rem;
-}
-
-.medication-item:hover .edit-medication,
-.medication-item:hover .delete-medication {
+.medication-item .action-buttons button:hover {
     cursor: pointer;
 }
 
