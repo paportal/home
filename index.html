@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prior Authorization Data Entry Form</title>
+    <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Prior Authorization Data Entry Form</h1>
+    <form id="pa-form">
+        <!-- Patient Information -->
+        <fieldset>
+            <legend>Patient Information</legend>
+            <label for="patient-first-name">First Name:</label>
+            <input type="text" id="patient-first-name" name="PatientFirstName" required>
+
+            <label for="patient-last-name">Last Name:</label>
+            <input type="text" id="patient-last-name" name="PatientLastName" required>
+
+            <label for="patient-dob">Date of Birth:</label>
+            <input type="date" id="patient-dob" name="PatientDOB" required>
+        </fieldset>
+
+        <!-- Insurance Details -->
+        <fieldset>
+            <legend>Insurance Details</legend>
+            <label for="bin">BIN:</label>
+            <input type="text" id="bin" name="BIN" required>
+
+            <label for="pcn">PCN:</label>
+            <input type="text" id="pcn" name="PCN" required>
+
+            <label for="group">Group:</label>
+            <input type="text" id="group" name="Group" required>
+        </fieldset>
+
+        <!-- Medications Section -->
+        <fieldset>
+            <legend>Medications</legend>
+            <div id="medications">
+                <div class="medication">
+                    <label for="medication-name-1">Medication Name:</label>
+                    <input type="text" id="medication-name-1" name="medicationName[]" required>
+
+                    <label for="medication-class-1">Class:</label>
+                    <input type="text" id="medication-class-1" name="medicationClass[]">
+
+                    <label for="medication-status-1">Status:</label>
+                    <select id="medication-status-1" name="medicationStatus[]" required>
+                        <option value="Approved">Approved</option>
+                        <option value="Denied">Denied</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+
+                    <label for="medication-notes-1">Notes:</label>
+                    <input type="text" id="medication-notes-1" name="medicationNotes[]">
+
+                    <button type="button" class="remove-medication" style="display: none;">Remove</button>
+                </div>
+            </div>
+            <button type="button" id="add-medication">Add Another Medication</button>
+        </fieldset>
+
+        <!-- Approval Details -->
+        <fieldset>
+            <legend>Approval Details</legend>
+            <label for="primary-drug">Primary Drug:</label>
+            <input type="text" id="primary-drug" name="PrimaryDrug">
+
+            <label for="approval-decision">Approval Decision:</label>
+            <select id="approval-decision" name="ApprovalDecision" required>
+                <option value="Approved">Approved</option>
+                <option value="Denied">Denied</option>
+                <option value="Partial">Partial</option>
+            </select>
+
+            <label for="decision-basis">Decision Basis:</label>
+            <select id="decision-basis" name="DecisionBasis" required>
+                <option value="PatientSpecific">Patient Specific</option>
+                <option value="InsurancePolicy">Insurance Policy</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="additional-notes">Additional Notes:</label>
+            <textarea id="additional-notes" name="AdditionalNotes"></textarea>
+        </fieldset>
+
+        <!-- Submit Button -->
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Include the JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
