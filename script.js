@@ -1,103 +1,127 @@
-// Function to add a new medication section
+// Initialize an array to store medications
+let medications = [];
+
+// Function to add a new medication
 document.getElementById('add-medication').addEventListener('click', function () {
-    var medicationsDiv = document.getElementById('medications');
-    var medicationCount = medicationsDiv.getElementsByClassName('medication-item').length + 1;
+    // Get medication details from the form
+    const medicationName = document.getElementById('medication-name').value.trim();
+    const medicationClass = document.getElementById('medication-class').value.trim();
+    const medicationStatus = document.getElementById('medication-status').value;
+    const decisionBasis = document.getElementById('decision-basis').value;
 
-    var newMedicationDiv = document.createElement('div');
-    newMedicationDiv.classList.add('medication-item');
+    if (medicationName === '') {
+        alert('Please enter the medication name.');
+        return;
+    }
 
-    newMedicationDiv.innerHTML = `
-        <button type="button" class="close remove-medication" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <div class="form-row align-items-end">
-            <div class="form-group col-md-3">
-                <label for="medication-name-${medicationCount}">Medication Name</label>
-                <input type="text" class="form-control" id="medication-name-${medicationCount}" name="medicationName[]" required>
-            </div>
-            <div class="form-group col-md-3">
-                <label for="medication-class-${medicationCount}">Class</label>
-                <input type="text" class="form-control" id="medication-class-${medicationCount}" name="medicationClass[]">
-            </div>
-            <div class="form-group col-md-3">
-                <label for="medication-status-${medicationCount}">Status</label>
-                <select class="form-control" id="medication-status-${medicationCount}" name="medicationStatus[]" required>
-                    <option value="Approved">Approved</option>
-                    <option value="Denied">Denied</option>
-                    <option value="Pending">Pending</option>
-                </select>
-            </div>
-            <div class="form-group col-md-3">
-                <label for="medication-notes-${medicationCount}">Notes</label>
-                <input type="text" class="form-control" id="medication-notes-${medicationCount}" name="medicationNotes[]">
-            </div>
-        </div>
-    `;
+    // Create a medication object
+    const medication = {
+        Name: medicationName,
+        Class: medicationClass,
+        Status: medicationStatus,
+        DecisionBasis: decisionBasis
+    };
 
-    medicationsDiv.appendChild(newMedicationDiv);
+    // Add medication to the array
+    medications.push(medication);
 
-    // Add event listener for the remove button
-    newMedicationDiv.querySelector('.remove-medication').addEventListener('click', function () {
-        medicationsDiv.removeChild(newMedicationDiv);
-    });
+    // Clear the medication form
+    document.getElementById('medication-name').value = '';
+    document.getElementById('medication-class').value = '';
+    document.getElementById('medication-status').value = 'Approved';
+    document.getElementById('decision-basis').value = 'PatientSpecific';
+
+    // Update the medications list display
+    updateMedicationsList();
 });
+
+// Function to update the medications list display
+function updateMedicationsList() {
+    const medicationsList = document.getElementById('medications-list');
+    medicationsList.innerHTML = '';
+
+    medications.forEach((medication, index) => {
+        const medicationDiv = document.createElement('div');
+        medicationDiv.classList.add('medication-item');
+
+        medicationDiv.innerHTML = `
+            <button type="button" class="edit-medication" data-index="${index}">
+                <i class="fas fa-edit"></i> Edit
+            </button>
+            <button type="button" class="delete-medication" data-index="${index}">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+            <p><strong>Name:</strong> ${medication.Name}</p>
+            <p><strong>Class:</strong> ${medication.Class}</p>
+            <p><strong>Status:</strong> ${medication.Status}</p>
+            <p><strong>Decision Basis:</strong> ${medication.DecisionBasis}</p>
+        `;
+
+        medicationsList.appendChild(medicationDiv);
+    });
+
+    // Add event listeners for edit and delete buttons
+    const editButtons = document.querySelectorAll('.edit-medication');
+    editButtons.forEach(button => {
+        button.addEventListener('click', editMedication);
+    });
+
+    const deleteButtons = document.querySelectorAll('.delete-medication');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', deleteMedication);
+    });
+}
+
+// Function to edit a medication
+function editMedication(event) {
+    const index = event.currentTarget.getAttribute('data-index');
+    const medication = medications[index];
+
+    // Populate the form with medication details
+    document.getElementById('medication-name').value = medication.Name;
+    document.getElementById('medication-class').value = medication.Class;
+    document.getElementById('medication-status').value = medication.Status;
+    document.getElementById('decision-basis').value = medication.DecisionBasis;
+
+    // Remove the medication from the array
+    medications.splice(index, 1);
+
+    // Update the medications list display
+    updateMedicationsList();
+}
+
+// Function to delete a medication
+function deleteMedication(event) {
+    const index = event.currentTarget.getAttribute('data-index');
+    medications.splice(index, 1);
+    updateMedicationsList();
+}
 
 // Function to handle form submission
 document.getElementById('pa-form').addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent default form submission
 
-    // Collect form data
-    var formData = new FormData(event.target);
-
-    // Convert formData to JSON
-    var data = {};
-    formData.forEach(function (value, key) {
-        if (key.endsWith('[]')) {
-            key = key.slice(0, -2);
-            if (!data[key]) {
-                data[key] = [];
-            }
-            data[key].push(value);
-        } else {
-            data[key] = value;
-        }
-    });
-
-    // Organize medications into objects
-    var medications = [];
-    var medicationNames = data.medicationName || [];
-    var medicationClasses = data.medicationClass || [];
-    var medicationStatuses = data.medicationStatus || [];
-    var medicationNotes = data.medicationNotes || [];
-
-    for (var i = 0; i < medicationNames.length; i++) {
-        medications.push({
-            Name: medicationNames[i],
-            Class: medicationClasses[i] || '',
-            Status: medicationStatuses[i],
-            Notes: medicationNotes[i] || ''
-        });
+    // Validate that at least one medication is added
+    if (medications.length === 0) {
+        alert('Please add at least one medication.');
+        return;
     }
 
-    // Prepare the final data object
-    var finalData = {
+    // Collect form data
+    const finalData = {
         PA_ID: 'PA_' + new Date().getTime(), // Generate a unique PA_ID
         PatientInfo: {
-            FirstName: data.PatientFirstName,
-            LastName: data.PatientLastName,
-            DOB: data.PatientDOB
+            FirstName: document.getElementById('patient-first-name').value.trim(),
+            LastName: document.getElementById('patient-last-name').value.trim(),
+            DOB: document.getElementById('patient-dob').value
         },
         Medications: medications,
-        PrimaryDrug: data.PrimaryDrug || '',
         InsuranceDetails: {
-            BIN: data.BIN,
-            PCN: data.PCN,
-            Group: data.Group
+            BIN: document.getElementById('bin').value.trim(),
+            PCN: document.getElementById('pcn').value.trim(),
+            Group: document.getElementById('group').value.trim()
         },
-        ApprovalDecision: data.ApprovalDecision,
-        DecisionBasis: data.DecisionBasis,
-        Timestamp: new Date().toISOString(),
-        AdditionalNotes: data.AdditionalNotes || ''
+        Timestamp: new Date().toISOString()
     };
 
     // Send data to Azure Function
@@ -111,11 +135,10 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
         .then(response => {
             if (response.ok) {
                 alert('Data submitted successfully!');
-                event.target.reset();
-                // Reset medications section
-                var medicationsDiv = document.getElementById('medications');
-                medicationsDiv.innerHTML = '';
-                medicationsDiv.appendChild(createMedicationDiv(1));
+                // Reset the form
+                document.getElementById('pa-form').reset();
+                medications = [];
+                updateMedicationsList();
             } else {
                 response.text().then(text => {
                     alert('Error submitting data: ' + text);
@@ -128,45 +151,4 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
         });
 });
 
-// Helper function to create a medication div
-function createMedicationDiv(medicationCount) {
-    var medicationDiv = document.createElement('div');
-    medicationDiv.classList.add('medication-item');
-
-    medicationDiv.innerHTML = `
-        <button type="button" class="close remove-medication" aria-label="Close" style="display: none;">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        <div class="form-row align-items-end">
-            <div class="form-group col-md-3">
-                <label for="medication-name-${medicationCount}">Medication Name</label>
-                <input type="text" class="form-control" id="medication-name-${medicationCount}" name="medicationName[]" required>
-            </div>
-            <div class="form-group col-md-3">
-                <label for="medication-class-${medicationCount}">Class</label>
-                <input type="text" class="form-control" id="medication-class-${medicationCount}" name="medicationClass[]">
-            </div>
-            <div class="form-group col-md-3">
-                <label for="medication-status-${medicationCount}">Status</label>
-                <select class="form-control" id="medication-status-${medicationCount}" name="medicationStatus[]" required>
-                    <option value="Approved">Approved</option>
-                    <option value="Denied">Denied</option>
-                    <option value="Pending">Pending</option>
-                </select>
-            </div>
-            <div class="form-group col-md-3">
-                <label for="medication-notes-${medicationCount}">Notes</label>
-                <input type="text" class="form-control" id="medication-notes-${medicationCount}" name="medicationNotes[]">
-            </div>
-        </div>
-    `;
-
-    return medicationDiv;
-}
-
-// Initialize the first medication section
-(function () {
-    var medicationsDiv = document.getElementById('medications');
-    medicationsDiv.innerHTML = '';
-    medicationsDiv.appendChild(createMedicationDiv(1));
-})();
+// Include Font Awesome for icons (in the HTML head section)

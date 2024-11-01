@@ -10,6 +10,9 @@
     />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
 </head>
 <body>
     <div class="container my-5">
@@ -63,77 +66,44 @@
                 <div class="card-header">
                     Medications
                 </div>
-                <div class="card-body" id="medications">
-                    <!-- Medication Item -->
-                    <div class="medication-item">
+                <div class="card-body">
+                    <!-- Medication Input Form -->
+                    <div id="medication-form">
                         <div class="form-row align-items-end">
                             <!-- Medication Name -->
                             <div class="form-group col-md-3">
-                                <label for="medication-name-1">Medication Name</label>
-                                <input type="text" class="form-control" id="medication-name-1" name="medicationName[]" required>
+                                <label for="medication-name">Medication Name</label>
+                                <input type="text" class="form-control" id="medication-name" name="medicationName">
                             </div>
                             <!-- Medication Class -->
                             <div class="form-group col-md-3">
-                                <label for="medication-class-1">Class</label>
-                                <input type="text" class="form-control" id="medication-class-1" name="medicationClass[]">
+                                <label for="medication-class">Class</label>
+                                <input type="text" class="form-control" id="medication-class" name="medicationClass">
                             </div>
                             <!-- Medication Status -->
                             <div class="form-group col-md-3">
-                                <label for="medication-status-1">Status</label>
-                                <select class="form-control" id="medication-status-1" name="medicationStatus[]" required>
+                                <label for="medication-status">Status</label>
+                                <select class="form-control" id="medication-status" name="medicationStatus">
                                     <option value="Approved">Approved</option>
                                     <option value="Denied">Denied</option>
                                     <option value="Pending">Pending</option>
                                 </select>
                             </div>
-                            <!-- Medication Notes -->
+                            <!-- Decision Basis -->
                             <div class="form-group col-md-3">
-                                <label for="medication-notes-1">Notes</label>
-                                <input type="text" class="form-control" id="medication-notes-1" name="medicationNotes[]">
+                                <label for="decision-basis">Decision Basis</label>
+                                <select class="form-control" id="decision-basis" name="decisionBasis">
+                                    <option value="PatientSpecific">Patient Specific</option>
+                                    <option value="InsurancePolicy">Insurance Policy</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
                         </div>
+                        <button type="button" class="btn btn-outline-primary" id="add-medication">Add Medication</button>
                     </div>
-                </div>
-                <div class="card-footer text-right">
-                    <button type="button" class="btn btn-outline-primary" id="add-medication">Add Another Medication</button>
-                </div>
-            </div>
-
-            <!-- Approval Details -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    Approval Details
-                </div>
-                <div class="card-body">
-                    <div class="form-row">
-                        <!-- Primary Drug -->
-                        <div class="form-group col-md-4">
-                            <label for="primary-drug">Primary Drug</label>
-                            <input type="text" class="form-control" id="primary-drug" name="PrimaryDrug">
-                        </div>
-                        <!-- Approval Decision -->
-                        <div class="form-group col-md-4">
-                            <label for="approval-decision">Approval Decision</label>
-                            <select class="form-control" id="approval-decision" name="ApprovalDecision" required>
-                                <option value="Approved">Approved</option>
-                                <option value="Denied">Denied</option>
-                                <option value="Partial">Partial</option>
-                            </select>
-                        </div>
-                        <!-- Decision Basis -->
-                        <div class="form-group col-md-4">
-                            <label for="decision-basis">Decision Basis</label>
-                            <select class="form-control" id="decision-basis" name="DecisionBasis" required>
-                                <option value="PatientSpecific">Patient Specific</option>
-                                <option value="InsurancePolicy">Insurance Policy</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-                    <!-- Additional Notes -->
-                    <div class="form-group">
-                        <label for="additional-notes">Additional Notes</label>
-                        <textarea class="form-control" id="additional-notes" name="AdditionalNotes" rows="3"></textarea>
+                    <!-- Medications List -->
+                    <div id="medications-list" class="mt-4">
+                        <!-- Medications will be displayed here -->
                     </div>
                 </div>
             </div>
