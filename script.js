@@ -1,29 +1,37 @@
 // Function to add a new medication section
 document.getElementById('add-medication').addEventListener('click', function () {
     var medicationsDiv = document.getElementById('medications');
-    var medicationCount = medicationsDiv.getElementsByClassName('medication').length + 1;
+    var medicationCount = medicationsDiv.getElementsByClassName('medication-item').length + 1;
 
     var newMedicationDiv = document.createElement('div');
-    newMedicationDiv.classList.add('medication');
+    newMedicationDiv.classList.add('medication-item');
 
     newMedicationDiv.innerHTML = `
-        <label for="medication-name-${medicationCount}">Medication Name:</label>
-        <input type="text" id="medication-name-${medicationCount}" name="medicationName[]" required>
-
-        <label for="medication-class-${medicationCount}">Class:</label>
-        <input type="text" id="medication-class-${medicationCount}" name="medicationClass[]">
-
-        <label for="medication-status-${medicationCount}">Status:</label>
-        <select id="medication-status-${medicationCount}" name="medicationStatus[]" required>
-            <option value="Approved">Approved</option>
-            <option value="Denied">Denied</option>
-            <option value="Pending">Pending</option>
-        </select>
-
-        <label for="medication-notes-${medicationCount}">Notes:</label>
-        <input type="text" id="medication-notes-${medicationCount}" name="medicationNotes[]">
-
-        <button type="button" class="remove-medication">Remove</button>
+        <button type="button" class="close remove-medication" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="form-row align-items-end">
+            <div class="form-group col-md-3">
+                <label for="medication-name-${medicationCount}">Medication Name</label>
+                <input type="text" class="form-control" id="medication-name-${medicationCount}" name="medicationName[]" required>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="medication-class-${medicationCount}">Class</label>
+                <input type="text" class="form-control" id="medication-class-${medicationCount}" name="medicationClass[]">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="medication-status-${medicationCount}">Status</label>
+                <select class="form-control" id="medication-status-${medicationCount}" name="medicationStatus[]" required>
+                    <option value="Approved">Approved</option>
+                    <option value="Denied">Denied</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="medication-notes-${medicationCount}">Notes</label>
+                <input type="text" class="form-control" id="medication-notes-${medicationCount}" name="medicationNotes[]">
+            </div>
+        </div>
     `;
 
     medicationsDiv.appendChild(newMedicationDiv);
@@ -104,7 +112,7 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
             if (response.ok) {
                 alert('Data submitted successfully!');
                 event.target.reset();
-                // Optionally, remove all but the first medication section
+                // Reset medications section
                 var medicationsDiv = document.getElementById('medications');
                 medicationsDiv.innerHTML = '';
                 medicationsDiv.appendChild(createMedicationDiv(1));
@@ -123,40 +131,42 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
 // Helper function to create a medication div
 function createMedicationDiv(medicationCount) {
     var medicationDiv = document.createElement('div');
-    medicationDiv.classList.add('medication');
+    medicationDiv.classList.add('medication-item');
 
     medicationDiv.innerHTML = `
-        <label for="medication-name-${medicationCount}">Medication Name:</label>
-        <input type="text" id="medication-name-${medicationCount}" name="medicationName[]" required>
-
-        <label for="medication-class-${medicationCount}">Class:</label>
-        <input type="text" id="medication-class-${medicationCount}" name="medicationClass[]">
-
-        <label for="medication-status-${medicationCount}">Status:</label>
-        <select id="medication-status-${medicationCount}" name="medicationStatus[]" required>
-            <option value="Approved">Approved</option>
-            <option value="Denied">Denied</option>
-            <option value="Pending">Pending</option>
-        </select>
-
-        <label for="medication-notes-${medicationCount}">Notes:</label>
-        <input type="text" id="medication-notes-${medicationCount}" name="medicationNotes[]">
-
-        <button type="button" class="remove-medication">Remove</button>
+        <button type="button" class="close remove-medication" aria-label="Close" style="display: none;">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <div class="form-row align-items-end">
+            <div class="form-group col-md-3">
+                <label for="medication-name-${medicationCount}">Medication Name</label>
+                <input type="text" class="form-control" id="medication-name-${medicationCount}" name="medicationName[]" required>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="medication-class-${medicationCount}">Class</label>
+                <input type="text" class="form-control" id="medication-class-${medicationCount}" name="medicationClass[]">
+            </div>
+            <div class="form-group col-md-3">
+                <label for="medication-status-${medicationCount}">Status</label>
+                <select class="form-control" id="medication-status-${medicationCount}" name="medicationStatus[]" required>
+                    <option value="Approved">Approved</option>
+                    <option value="Denied">Denied</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="medication-notes-${medicationCount}">Notes</label>
+                <input type="text" class="form-control" id="medication-notes-${medicationCount}" name="medicationNotes[]">
+            </div>
+        </div>
     `;
-
-    // Add event listener for the remove button
-    medicationDiv.querySelector('.remove-medication').addEventListener('click', function () {
-        var medicationsDiv = document.getElementById('medications');
-        medicationsDiv.removeChild(medicationDiv);
-    });
 
     return medicationDiv;
 }
 
 // Initialize the first medication section
 (function () {
-    var firstMedicationDiv = document.querySelector('.medication');
-    var removeButton = firstMedicationDiv.querySelector('.remove-medication');
-    removeButton.style.display = 'none'; // Hide the remove button for the first medication
+    var medicationsDiv = document.getElementById('medications');
+    medicationsDiv.innerHTML = '';
+    medicationsDiv.appendChild(createMedicationDiv(1));
 })();

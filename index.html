@@ -3,93 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <title>Prior Authorization Data Entry Form</title>
-    <!-- Link to the CSS file -->
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Prior Authorization Data Entry Form</h1>
-    <form id="pa-form">
-        <!-- Patient Information -->
-        <fieldset>
-            <legend>Patient Information</legend>
-            <label for="patient-first-name">First Name:</label>
-            <input type="text" id="patient-first-name" name="PatientFirstName" required>
-
-            <label for="patient-last-name">Last Name:</label>
-            <input type="text" id="patient-last-name" name="PatientLastName" required>
-
-            <label for="patient-dob">Date of Birth:</label>
-            <input type="date" id="patient-dob" name="PatientDOB" required>
-        </fieldset>
-
-        <!-- Insurance Details -->
-        <fieldset>
-            <legend>Insurance Details</legend>
-            <label for="bin">BIN:</label>
-            <input type="text" id="bin" name="BIN" required>
-
-            <label for="pcn">PCN:</label>
-            <input type="text" id="pcn" name="PCN" required>
-
-            <label for="group">Group:</label>
-            <input type="text" id="group" name="Group" required>
-        </fieldset>
-
-        <!-- Medications Section -->
-        <fieldset>
-            <legend>Medications</legend>
-            <div id="medications">
-                <div class="medication">
-                    <label for="medication-name-1">Medication Name:</label>
-                    <input type="text" id="medication-name-1" name="medicationName[]" required>
-
-                    <label for="medication-class-1">Class:</label>
-                    <input type="text" id="medication-class-1" name="medicationClass[]">
-
-                    <label for="medication-status-1">Status:</label>
-                    <select id="medication-status-1" name="medicationStatus[]" required>
-                        <option value="Approved">Approved</option>
-                        <option value="Denied">Denied</option>
-                        <option value="Pending">Pending</option>
-                    </select>
-
-                    <label for="medication-notes-1">Notes:</label>
-                    <input type="text" id="medication-notes-1" name="medicationNotes[]">
-
-                    <button type="button" class="remove-medication" style="display: none;">Remove</button>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Prior Authorization Data Entry Form</h1>
+        <form id="pa-form">
+            <!-- Patient and Insurance Information -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    Patient and Insurance Information
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <!-- Patient First Name -->
+                        <div class="form-group col-md-4">
+                            <label for="patient-first-name">First Name</label>
+                            <input type="text" class="form-control" id="patient-first-name" name="PatientFirstName" required>
+                        </div>
+                        <!-- Patient Last Name -->
+                        <div class="form-group col-md-4">
+                            <label for="patient-last-name">Last Name</label>
+                            <input type="text" class="form-control" id="patient-last-name" name="PatientLastName" required>
+                        </div>
+                        <!-- Patient DOB -->
+                        <div class="form-group col-md-4">
+                            <label for="patient-dob">Date of Birth</label>
+                            <input type="date" class="form-control" id="patient-dob" name="PatientDOB" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <!-- BIN -->
+                        <div class="form-group col-md-4">
+                            <label for="bin">BIN</label>
+                            <input type="text" class="form-control" id="bin" name="BIN" required>
+                        </div>
+                        <!-- PCN -->
+                        <div class="form-group col-md-4">
+                            <label for="pcn">PCN</label>
+                            <input type="text" class="form-control" id="pcn" name="PCN" required>
+                        </div>
+                        <!-- Group -->
+                        <div class="form-group col-md-4">
+                            <label for="group">Group</label>
+                            <input type="text" class="form-control" id="group" name="Group" required>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button type="button" id="add-medication">Add Another Medication</button>
-        </fieldset>
 
-        <!-- Approval Details -->
-        <fieldset>
-            <legend>Approval Details</legend>
-            <label for="primary-drug">Primary Drug:</label>
-            <input type="text" id="primary-drug" name="PrimaryDrug">
+            <!-- Medications Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    Medications
+                </div>
+                <div class="card-body" id="medications">
+                    <!-- Medication Item -->
+                    <div class="medication-item">
+                        <div class="form-row align-items-end">
+                            <!-- Medication Name -->
+                            <div class="form-group col-md-3">
+                                <label for="medication-name-1">Medication Name</label>
+                                <input type="text" class="form-control" id="medication-name-1" name="medicationName[]" required>
+                            </div>
+                            <!-- Medication Class -->
+                            <div class="form-group col-md-3">
+                                <label for="medication-class-1">Class</label>
+                                <input type="text" class="form-control" id="medication-class-1" name="medicationClass[]">
+                            </div>
+                            <!-- Medication Status -->
+                            <div class="form-group col-md-3">
+                                <label for="medication-status-1">Status</label>
+                                <select class="form-control" id="medication-status-1" name="medicationStatus[]" required>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Denied">Denied</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
+                            <!-- Medication Notes -->
+                            <div class="form-group col-md-3">
+                                <label for="medication-notes-1">Notes</label>
+                                <input type="text" class="form-control" id="medication-notes-1" name="medicationNotes[]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button type="button" class="btn btn-outline-primary" id="add-medication">Add Another Medication</button>
+                </div>
+            </div>
 
-            <label for="approval-decision">Approval Decision:</label>
-            <select id="approval-decision" name="ApprovalDecision" required>
-                <option value="Approved">Approved</option>
-                <option value="Denied">Denied</option>
-                <option value="Partial">Partial</option>
-            </select>
+            <!-- Approval Details -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    Approval Details
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <!-- Primary Drug -->
+                        <div class="form-group col-md-4">
+                            <label for="primary-drug">Primary Drug</label>
+                            <input type="text" class="form-control" id="primary-drug" name="PrimaryDrug">
+                        </div>
+                        <!-- Approval Decision -->
+                        <div class="form-group col-md-4">
+                            <label for="approval-decision">Approval Decision</label>
+                            <select class="form-control" id="approval-decision" name="ApprovalDecision" required>
+                                <option value="Approved">Approved</option>
+                                <option value="Denied">Denied</option>
+                                <option value="Partial">Partial</option>
+                            </select>
+                        </div>
+                        <!-- Decision Basis -->
+                        <div class="form-group col-md-4">
+                            <label for="decision-basis">Decision Basis</label>
+                            <select class="form-control" id="decision-basis" name="DecisionBasis" required>
+                                <option value="PatientSpecific">Patient Specific</option>
+                                <option value="InsurancePolicy">Insurance Policy</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Additional Notes -->
+                    <div class="form-group">
+                        <label for="additional-notes">Additional Notes</label>
+                        <textarea class="form-control" id="additional-notes" name="AdditionalNotes" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
 
-            <label for="decision-basis">Decision Basis:</label>
-            <select id="decision-basis" name="DecisionBasis" required>
-                <option value="PatientSpecific">Patient Specific</option>
-                <option value="InsurancePolicy">Insurance Policy</option>
-                <option value="Other">Other</option>
-            </select>
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-success btn-block">Submit</button>
+        </form>
+    </div>
 
-            <label for="additional-notes">Additional Notes:</label>
-            <textarea id="additional-notes" name="AdditionalNotes"></textarea>
-        </fieldset>
-
-        <!-- Submit Button -->
-        <button type="submit">Submit</button>
-    </form>
-
+    <!-- Include jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"
+    ></script>
     <!-- Include the JavaScript file -->
     <script src="script.js"></script>
 </body>
