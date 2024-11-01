@@ -1,5 +1,6 @@
 // Initialize an array to store medications
 let medications = [];
+let currentPatient = null;
 
 // Function to add a new medication
 document.getElementById('add-medication').addEventListener('click', function () {
@@ -40,6 +41,11 @@ document.getElementById('add-medication').addEventListener('click', function () 
 function updateMedicationsList() {
     const medicationsList = document.getElementById('medications-list');
     medicationsList.innerHTML = '';
+
+    if (medications.length === 0) {
+        medicationsList.innerHTML = '<p>No medications added yet.</p>';
+        return;
+    }
 
     // Create a table to display medications
     const table = document.createElement('table');
@@ -179,8 +185,10 @@ function cancelEdit(event) {
 // Function to delete a medication
 function deleteMedication(event) {
     const index = event.currentTarget.getAttribute('data-index');
-    medications.splice(index, 1);
-    updateMedicationsList();
+    if (confirm('Are you sure you want to delete this medication?')) {
+        medications.splice(index, 1);
+        updateMedicationsList();
+    }
 }
 
 // Function to handle form submission
@@ -202,13 +210,14 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
 
     // Collect form data
     const finalData = {
-        PA_ID: 'PA_' + new Date().getTime(), // Generate a unique PA_ID
+        RecordID: 'MR_' + new Date().getTime(),
+        PatientID: currentPatient ? currentPatient.PatientID : null,
         PatientInfo: {
             FirstName: document.getElementById('patient-first-name').value.trim(),
             LastName: document.getElementById('patient-last-name').value.trim(),
             DOB: document.getElementById('patient-dob').value
         },
-        Medications: medications.map(({ isEditing, ...med }) => med), // Exclude isEditing flag
+        Medications: medications.map(({ isEditing, ...med }) => med),
         InsuranceDetails: {
             BIN: document.getElementById('bin').value.trim(),
             PCN: document.getElementById('pcn').value.trim(),
@@ -218,7 +227,7 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
     };
 
     // Send data to Azure Function
-    fetch('https://your-azure-function-url', {
+    fetch('https://your-azure-function-url/api/medications', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -232,6 +241,7 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
                 document.getElementById('pa-form').reset();
                 medications = [];
                 updateMedicationsList();
+                currentPatient = null;
             } else {
                 response.text().then(text => {
                     alert('Error submitting data: ' + text);
@@ -243,3 +253,73 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
             alert('Error submitting data.');
         });
 });
+
+// Patient lookup functionality
+document.getElementById('patient-lookup').addEventListener('click', function () {
+    const firstName = document.getElementById('patient-first-name').value.trim();
+    const lastName = document.getElementById('patient-last-name').value.trim();
+    const dob = document.getElementById('patient-dob').value;
+
+    if (!firstName || !lastName || !dob) {
+        alert('Please enter first name, last name, and date of birth.');
+        return;
+    }
+
+    // Fetch patient data from the server
+    fetch(`https://your-azure-function-url/api/patients/search?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&dob=${encodeURIComponent(dob)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Patient not found.');
+            }
+            return response.json();
+        })
+        .then(patient => {
+            currentPatient = patient;
+            populatePatientInfo(patient);
+            fetchMedicationHistory(patient.PatientID);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message);
+        });
+});
+
+function populatePatientInfo(patient) {
+    document.getElementById('patient-first-name').value = patient.FirstName;
+    document.getElementById('patient-last-name').value = patient.LastName;
+    document.getElementById('patient-dob').value = patient.DOB;
+    document.getElementById('bin').value = patient.InsuranceDetails.BIN;
+    document.getElementById('pcn').value = patient.InsuranceDetails.PCN;
+    document.getElementById('group').value = patient.InsuranceDetails.Group;
+}
+
+function fetchMedicationHistory(patientID) {
+    fetch(`https://your-azure-function-url/api/medications/history?patientID=${encodeURIComponent(patientID)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error fetching medication history.');
+            }
+            return response.json();
+        })
+        .then(records => {
+            // Flatten the medication records into the medications array
+            medications = [];
+            records.forEach(record => {
+                record.Medications.forEach(med => {
+                    medications.push({
+                        ...med,
+                        isEditing: false,
+                        InsuranceDetails: record.InsuranceDetails,
+                        Timestamp: record.Timestamp
+                    });
+                });
+            });
+            updateMedicationsList();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            medications = []; // Clear medications if error occurs
+            updateMedicationsList();
+            alert(error.message);
+        });
+}
