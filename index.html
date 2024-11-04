@@ -31,20 +31,29 @@
                         <div class="form-group col-md-3">
                             <label for="patient-first-name">First Name</label>
                             <input type="text" class="form-control" id="patient-first-name" name="PatientFirstName" required>
+                            <div class="invalid-feedback">
+                                Please enter the first name.
+                            </div>
                         </div>
                         <!-- Patient Last Name -->
                         <div class="form-group col-md-3">
                             <label for="patient-last-name">Last Name</label>
                             <input type="text" class="form-control" id="patient-last-name" name="PatientLastName" required>
+                            <div class="invalid-feedback">
+                                Please enter the last name.
+                            </div>
                         </div>
                         <!-- Patient DOB -->
                         <div class="form-group col-md-3">
                             <label for="patient-dob">Date of Birth</label>
                             <input type="date" class="form-control" id="patient-dob" name="PatientDOB" required>
+                            <div class="invalid-feedback">
+                                Please enter the date of birth.
+                            </div>
                         </div>
                         <!-- Lookup Button -->
                         <div class="form-group col-md-3">
-                            <button type="button" class="btn btn-primary" id="patient-lookup">Lookup</button>
+                            <button type="button" class="btn btn-primary btn-block" id="patient-lookup">Lookup</button>
                         </div>
                     </div>
                     <div class="form-row">
@@ -110,6 +119,7 @@
                     <!-- Medications List -->
                     <div id="medications-list" class="mt-4">
                         <!-- Medications will be displayed here -->
+                        <p>No medications added yet.</p>
                     </div>
                 </div>
             </div>
@@ -117,6 +127,58 @@
             <!-- Submit Button -->
             <button type="submit" class="btn btn-success btn-block">Submit</button>
         </form>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addPatientModalLabel">Add New Patient</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="add-patient-form">
+              <div class="form-group">
+                <label for="modal-first-name">First Name</label>
+                <input type="text" class="form-control" id="modal-first-name" required>
+                <div class="invalid-feedback">
+                    Please enter the first name.
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="modal-last-name">Last Name</label>
+                <input type="text" class="form-control" id="modal-last-name" required>
+                <div class="invalid-feedback">
+                    Please enter the last name.
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="modal-dob">Date of Birth</label>
+                <input type="date" class="form-control" id="modal-dob" required>
+                <div class="invalid-feedback">
+                    Please enter the date of birth.
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="modal-bin">BIN</label>
+                <input type="text" class="form-control" id="modal-bin">
+              </div>
+              <div class="form-group">
+                <label for="modal-pcn">PCN</label>
+                <input type="text" class="form-control" id="modal-pcn">
+              </div>
+              <div class="form-group">
+                <label for="modal-group">Group</label>
+                <input type="text" class="form-control" id="modal-group">
+              </div>
+              <button type="submit" class="btn btn-success">Add Patient</button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Include jQuery and Bootstrap JS -->

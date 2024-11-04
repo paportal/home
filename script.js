@@ -1,3 +1,6 @@
+// Define the base URL for Azure Functions
+const FUNCTION_APP_URL = 'https://YOUR_FUNCTION_APP_NAME.azurewebsites.net/api';
+
 // Initialize an array to store medications
 let medications = [];
 let currentPatient = null;
@@ -73,8 +76,15 @@ function updateMedicationsList() {
         if (medication.isEditing) {
             // Editable row
             row.innerHTML = `
-                <td><input type="text" class="form-control" value="${medication.Name}" id="edit-name-${index}"></td>
-                <td><input type="text" class="form-control" value="${medication.Class}" id="edit-class-${index}"></td>
+                <td>
+                    <input type="text" class="form-control" value="${medication.Name}" id="edit-name-${index}" required>
+                    <div class="invalid-feedback">
+                        Please enter the medication name.
+                    </div>
+                </td>
+                <td>
+                    <input type="text" class="form-control" value="${medication.Class}" id="edit-class-${index}">
+                </td>
                 <td>
                     <select class="form-control" id="edit-status-${index}">
                         <option value="Approved" ${medication.Status === 'Approved' ? 'selected' : ''}>Approved</option>
@@ -226,8 +236,8 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
         Timestamp: new Date().toISOString()
     };
 
-    // Send data to Azure Function
-    fetch('https://your-azure-function-url/api/medications', {
+    // Send data to MedicationSubmission Azure Function
+    fetch(`${FUNCTION_APP_URL}/MedicationSubmission`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -242,15 +252,17 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
                 medications = [];
                 updateMedicationsList();
                 currentPatient = null;
+                // Hide the Add Patient modal if it was visible
+                $('#addPatientModal').modal('hide');
             } else {
-                response.text().then(text => {
-                    alert('Error submitting data: ' + text);
+                return response.text().then(text => {
+                    throw new Error(text);
                 });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error submitting data.');
+            alert('Error submitting data: ' + error.message);
         });
 });
 
@@ -266,10 +278,16 @@ document.getElementById('patient-lookup').addEventListener('click', function () 
     }
 
     // Fetch patient data from the server
-    fetch(`https://your-azure-function-url/api/patients/search?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&dob=${encodeURIComponent(dob)}`)
+    fetch(`${FUNCTION_APP_URL}/PatientSearch?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&dob=${encodeURIComponent(dob)}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Patient not found.');
+                if (response.status === 404) {
+                    // Show the Add Patient modal if patient not found
+                    $('#addPatientModal').modal('show');
+                    throw new Error('Patient not found. You can add a new patient.');
+                } else {
+                    throw new Error('Error searching for patient.');
+                }
             }
             return response.json();
         })
@@ -277,6 +295,8 @@ document.getElementById('patient-lookup').addEventListener('click', function () 
             currentPatient = patient;
             populatePatientInfo(patient);
             fetchMedicationHistory(patient.PatientID);
+            // Hide the Add Patient modal if it was previously visible
+            $('#addPatientModal').modal('hide');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -284,6 +304,7 @@ document.getElementById('patient-lookup').addEventListener('click', function () 
         });
 });
 
+// Function to populate patient information in the form
 function populatePatientInfo(patient) {
     document.getElementById('patient-first-name').value = patient.FirstName;
     document.getElementById('patient-last-name').value = patient.LastName;
@@ -293,8 +314,9 @@ function populatePatientInfo(patient) {
     document.getElementById('group').value = patient.InsuranceDetails.Group;
 }
 
+// Function to fetch and display medication history
 function fetchMedicationHistory(patientID) {
-    fetch(`https://your-azure-function-url/api/medications/history?patientID=${encodeURIComponent(patientID)}`)
+    fetch(`${FUNCTION_APP_URL}/MedicationHistory?patientID=${encodeURIComponent(patientID)}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error fetching medication history.');
@@ -308,9 +330,7 @@ function fetchMedicationHistory(patientID) {
                 record.Medications.forEach(med => {
                     medications.push({
                         ...med,
-                        isEditing: false,
-                        InsuranceDetails: record.InsuranceDetails,
-                        Timestamp: record.Timestamp
+                        isEditing: false
                     });
                 });
             });
@@ -323,3 +343,63 @@ function fetchMedicationHistory(patientID) {
             alert(error.message);
         });
 }
+
+// Handle Add Patient Form Submission via Modal
+document.getElementById('add-patient-form').addEventListener('submit', function (event) {
+    event.preventDefault(); // Prevent default form submission
+
+    const firstName = document.getElementById('modal-first-name').value.trim();
+    const lastName = document.getElementById('modal-last-name').value.trim();
+    const dob = document.getElementById('modal-dob').value;
+    const bin = document.getElementById('modal-bin').value.trim();
+    const pcn = document.getElementById('modal-pcn').value.trim();
+    const group = document.getElementById('modal-group').value.trim();
+
+    if (!firstName || !lastName || !dob) {
+        alert('Please enter first name, last name, and date of birth.');
+        return;
+    }
+
+    const patientData = {
+        FirstName: firstName,
+        LastName: lastName,
+        DOB: dob,
+        InsuranceDetails: {
+            BIN: bin,
+            PCN: pcn,
+            Group: group
+        }
+    };
+
+    fetch(`${FUNCTION_APP_URL}/AddPatient`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(patientData)
+    })
+        .then(response => {
+            if (response.status === 201) {
+                return response.json();
+            } else if (response.status === 409) {
+                throw new Error('Patient already exists.');
+            } else {
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
+            }
+        })
+        .then(newPatient => {
+            alert('Patient added successfully!');
+            currentPatient = newPatient;
+            populatePatientInfo(newPatient);
+            medications = []; // Clear any existing medications
+            updateMedicationsList();
+            // Hide the Add Patient modal
+            $('#addPatientModal').modal('hide');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding patient: ' + error.message);
+        });
+});
