@@ -1,5 +1,5 @@
 // Define the base URL for Azure Functions
-const FUNCTION_APP_URL = 'lonestar-core-services.azurewebsites.net/api';
+const FUNCTION_APP_URL = 'https://lonestar-core-services.azurewebsites.net/api';
 
 // Initialize an array to store medications
 let medications = [];
