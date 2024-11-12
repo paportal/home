@@ -194,7 +194,52 @@
 
     <!-- Add Patient Modal -->
     <div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
-      <!-- [Existing modal content remains unchanged] -->
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 id="addPatientModalLabel">Add New Patient</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="add-patient-form">
+              <!-- First Name -->
+              <div class="form-group">
+                <label for="new-patient-first-name">First Name</label>
+                <input type="text" class="form-control" id="new-patient-first-name" required>
+              </div>
+              <!-- Last Name -->
+              <div class="form-group">
+                <label for="new-patient-last-name">Last Name</label>
+                <input type="text" class="form-control" id="new-patient-last-name" required>
+              </div>
+              <!-- Date of Birth -->
+              <div class="form-group">
+                <label for="new-patient-dob">Date of Birth</label>
+                <input type="date" class="form-control" id="new-patient-dob" required>
+              </div>
+              <!-- BIN -->
+              <div class="form-group">
+                <label for="new-bin">BIN</label>
+                <input type="text" class="form-control" id="new-bin">
+              </div>
+              <!-- PCN -->
+              <div class="form-group">
+                <label for="new-pcn">PCN</label>
+                <input type="text" class="form-control" id="new-pcn">
+              </div>
+              <!-- Group -->
+              <div class="form-group">
+                <label for="new-group">Group</label>
+                <input type="text" class="form-control" id="new-group">
+              </div>
+              <!-- Submit Button -->
+              <button type="submit" class="btn btn-primary">Add Patient</button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Include jQuery and Bootstrap JS -->
