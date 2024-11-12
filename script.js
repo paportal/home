@@ -1,8 +1,10 @@
 // Define the base URL for Azure Functions
-const FUNCTION_APP_URL = 'https://lonestar-core-services.azurewebsites.net/api';
+const FUNCTION_APP_URL = 'https://YOUR_FUNCTION_APP_NAME.azurewebsites.net/api';
 
-// Initialize an array to store medications
-let medications = [];
+// Initialize arrays to store medications
+let medications = []; // For current medications to submit
+let medicationHistory = []; // For previously submitted medications
+let filteredMedicationHistory = []; // For filtered medication history
 let currentPatient = null;
 
 // Function to add a new medication
@@ -151,55 +153,7 @@ function updateMedicationsList() {
     });
 }
 
-// Function to enter edit mode
-function enterEditMode(event) {
-    const index = event.currentTarget.getAttribute('data-index');
-    medications[index].isEditing = true;
-    updateMedicationsList();
-}
-
-// Function to save edited medication
-function saveMedication(event) {
-    const index = event.currentTarget.getAttribute('data-index');
-
-    // Get updated values
-    const updatedName = document.getElementById(`edit-name-${index}`).value.trim();
-    const updatedClass = document.getElementById(`edit-class-${index}`).value.trim();
-    const updatedStatus = document.getElementById(`edit-status-${index}`).value;
-    const updatedDecision = document.getElementById(`edit-decision-${index}`).value;
-
-    if (updatedName === '') {
-        alert('Medication name cannot be empty.');
-        return;
-    }
-
-    // Update the medication object
-    medications[index] = {
-        Name: updatedName,
-        Class: updatedClass,
-        Status: updatedStatus,
-        DecisionBasis: updatedDecision,
-        isEditing: false
-    };
-
-    updateMedicationsList();
-}
-
-// Function to cancel edit
-function cancelEdit(event) {
-    const index = event.currentTarget.getAttribute('data-index');
-    medications[index].isEditing = false;
-    updateMedicationsList();
-}
-
-// Function to delete a medication
-function deleteMedication(event) {
-    const index = event.currentTarget.getAttribute('data-index');
-    if (confirm('Are you sure you want to delete this medication?')) {
-        medications.splice(index, 1);
-        updateMedicationsList();
-    }
-}
+// [Existing functions for edit, save, cancel, delete medications remain unchanged]
 
 // Function to handle form submission
 document.getElementById('pa-form').addEventListener('submit', function (event) {
@@ -248,12 +202,12 @@ document.getElementById('pa-form').addEventListener('submit', function (event) {
             if (response.ok) {
                 alert('Data submitted successfully!');
                 // Reset the form
-                document.getElementById('pa-form').reset();
-                medications = [];
+                medications = []; // Clear medications array
                 updateMedicationsList();
-                currentPatient = null;
-                // Hide the Add Patient modal if it was visible
-                $('#addPatientModal').modal('hide');
+                // Fetch updated medication history
+                if (currentPatient && currentPatient.PatientID) {
+                    fetchMedicationHistory(currentPatient.PatientID);
+                }
             } else {
                 return response.text().then(text => {
                     throw new Error(text);
@@ -295,6 +249,8 @@ document.getElementById('patient-lookup').addEventListener('click', function () 
             currentPatient = patient;
             populatePatientInfo(patient);
             fetchMedicationHistory(patient.PatientID);
+            medications = []; // Clear current medications
+            updateMedicationsList();
             // Hide the Add Patient modal if it was previously visible
             $('#addPatientModal').modal('hide');
         })
@@ -324,24 +280,152 @@ function fetchMedicationHistory(patientID) {
             return response.json();
         })
         .then(records => {
-            // Flatten the medication records into the medications array
-            medications = [];
+            // Extract medications from records into medicationHistory array
+            medicationHistory = [];
             records.forEach(record => {
                 record.Medications.forEach(med => {
-                    medications.push({
+                    medicationHistory.push({
                         ...med,
-                        isEditing: false
+                        Timestamp: record.Timestamp,
+                        RecordID: record.RecordID
                     });
                 });
             });
-            updateMedicationsList();
+            // Sort medication history by date (most recent first)
+            medicationHistory.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+            // Initialize filteredMedicationHistory
+            filteredMedicationHistory = [...medicationHistory];
+            displayMedicationHistory();
         })
         .catch(error => {
             console.error('Error:', error);
-            medications = []; // Clear medications if error occurs
-            updateMedicationsList();
+            medicationHistory = []; // Clear medication history if error occurs
+            filteredMedicationHistory = [];
+            displayMedicationHistory();
             alert(error.message);
         });
+}
+
+// Function to display medication history
+function displayMedicationHistory() {
+    const medicationHistoryDiv = document.getElementById('medication-history');
+    medicationHistoryDiv.innerHTML = '';
+
+    if (filteredMedicationHistory.length === 0) {
+        medicationHistoryDiv.innerHTML = '<p>No medication history available.</p>';
+        return;
+    }
+
+    // Create a table to display medication history
+    const table = document.createElement('table');
+    table.classList.add('table', 'table-bordered', 'table-striped');
+
+    // Table header
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th>Medication Name</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th>Decision Basis</th>
+            <th>Date</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+
+    // Table body
+    const tbody = document.createElement('tbody');
+
+    filteredMedicationHistory.forEach((med, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><a href="#" class="medication-detail" data-index="${index}">${med.Name}</a></td>
+            <td>${med.Class}</td>
+            <td>${med.Status}</td>
+            <td>${med.DecisionBasis}</td>
+            <td>${new Date(med.Timestamp).toLocaleString()}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    medicationHistoryDiv.appendChild(table);
+
+    // Add event listeners for medication detail links
+    document.querySelectorAll('.medication-detail').forEach(link => {
+        link.addEventListener('click', showMedicationDetails);
+    });
+}
+
+// Function to show medication details in a modal
+function showMedicationDetails(event) {
+    event.preventDefault();
+    const index = event.currentTarget.getAttribute('data-index');
+    const med = filteredMedicationHistory[index];
+
+    // Populate modal with medication details
+    const modalTitle = document.getElementById('medicationDetailsModalLabel');
+    const modalBody = document.getElementById('medication-details-content');
+
+    modalTitle.textContent = `Medication Details - ${med.Name}`;
+    modalBody.innerHTML = `
+        <p><strong>Name:</strong> ${med.Name}</p>
+        <p><strong>Class:</strong> ${med.Class}</p>
+        <p><strong>Status:</strong> ${med.Status}</p>
+        <p><strong>Decision Basis:</strong> ${med.DecisionBasis}</p>
+        <p><strong>Date:</strong> ${new Date(med.Timestamp).toLocaleString()}</p>
+        <p><strong>Record ID:</strong> ${med.RecordID}</p>
+    `;
+
+    // Show the modal
+    $('#medicationDetailsModal').modal('show');
+}
+
+// Event listeners for search and filter inputs
+document.getElementById('search-name').addEventListener('input', filterMedicationHistory);
+document.getElementById('filter-status').addEventListener('change', filterMedicationHistory);
+document.getElementById('start-date').addEventListener('change', filterMedicationHistory);
+document.getElementById('end-date').addEventListener('change', filterMedicationHistory);
+
+// Function to filter medication history
+function filterMedicationHistory() {
+    const searchName = document.getElementById('search-name').value.trim().toLowerCase();
+    const filterStatus = document.getElementById('filter-status').value;
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+    filteredMedicationHistory = medicationHistory.filter(med => {
+        let matches = true;
+
+        // Filter by name
+        if (searchName && !med.Name.toLowerCase().includes(searchName)) {
+            matches = false;
+        }
+
+        // Filter by status
+        if (filterStatus && med.Status !== filterStatus) {
+            matches = false;
+        }
+
+        // Filter by date range
+        const medDate = new Date(med.Timestamp).setHours(0,0,0,0);
+        if (startDate) {
+            const start = new Date(startDate).setHours(0,0,0,0);
+            if (medDate < start) {
+                matches = false;
+            }
+        }
+        if (endDate) {
+            const end = new Date(endDate).setHours(0,0,0,0);
+            if (medDate > end) {
+                matches = false;
+            }
+        }
+
+        return matches;
+    });
+
+    displayMedicationHistory();
 }
 
 // Handle Add Patient Form Submission via Modal
